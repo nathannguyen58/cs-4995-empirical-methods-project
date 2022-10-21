@@ -19,8 +19,7 @@ def get_pushshift_data(after, before, sub):
         data = json.loads(r.text)
 
         return data['data']
-    else:
-        print("STATUS CODE: 204")
+    
 
 
 def collect_subData(subm):
@@ -39,9 +38,12 @@ def collect_subData(subm):
     created = datetime.datetime.fromtimestamp(subm['created_utc'])
     numComms = subm['num_comments']
     permalink = subm['permalink']
-    subData.append((subId, title, body, url, author, score, created, numComms, permalink))
 
-    subStats[subId] = subData
+
+    if body not in {'', '[removed]'}:
+        subData.append((subId, title, body, url, author, score, created, numComms, permalink))
+        subStats[subId] = subData
+
 
 def update_subFile():
     upload_count = 0
