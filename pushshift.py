@@ -25,7 +25,10 @@ def get_pushshift_data(after, before, sub):
 def collect_subData(subm):
     subData = list() #list to store data points
     title = subm['title']
-    url = subm['url']
+    try:
+        url = subm['url']
+    except KeyError:
+        url = ''
 
     try:
         body = subm['selftext']
@@ -40,7 +43,7 @@ def collect_subData(subm):
     permalink = subm['permalink']
 
 
-    if body not in {'', '[removed]'}:
+    if body not in {'', '[removed]', '[deleted]'} and  url not in {'', '[removed]', '[deleted]'}:
         subData.append((subId, title, body, url, author, score, created, numComms, permalink))
         subStats[subId] = subData
 
@@ -64,10 +67,10 @@ subStats = {}
 
 subCount = 0
 
-sub = 'columbia'
+sub = 'ucla'
 
-after = '1648843278'
-before = '1666379989'
+after = '1556668800'
+before = '1666384821'
 
 data = get_pushshift_data(after, before, sub)
 
@@ -81,6 +84,6 @@ while len(data) > 0:
     after = data[-1]['created_utc']
     data = get_pushshift_data(after, before, sub)
     #
-    time.sleep(0.8)
+    time.sleep(2)
 
 update_subFile()
