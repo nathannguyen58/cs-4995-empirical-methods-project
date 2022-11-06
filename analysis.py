@@ -154,6 +154,8 @@ def dictToCsv(my_dict, dataType, time):
 def run():
 	for schoolType in ['rural', 'urban', 'all']:
 		for timePeriod in ['pre', 'peak', 'school_opening']:
+			if schoolType == 'urban' and timePeriod == 'pre':
+				continue
 			df = loadData(schoolType)
 			splitDf = splitDataIntoTimePeriods(df, timePeriod)
 			scores = queryModel(splitDf)
