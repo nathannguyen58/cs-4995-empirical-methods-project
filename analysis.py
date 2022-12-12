@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 import csv
 from datetime import datetime
+from csv import DictWriter
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline, DistilBertForSequenceClassification
 from transformers.modeling_outputs import SequenceClassifierOutput
 
@@ -61,6 +62,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput
 # classifier = pipeline("text-classification", model=model, tokenizer=tokenizer, return_all_scores=True, truncation = True)
 
 classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", return_all_scores=True, truncation = True)
+categories = ['anger', 'joy', 'disgust', 'fear', 'surprise', 'sadness', 'neutral']
 
 def loadData(dataType):
 	rural_path = "/Users/nathannguyen/Desktop/senioryear/cs-4995-empirical-methods-project-scraping/rural_schools"
@@ -111,33 +113,29 @@ def splitDataIntoTimePeriods(df, period):
 # 	df = pd.read_csv('/Users/nathannguyen/Desktop/senioryear/cs-4995-empirical-methods-project-scraping/rural_schools/Auburn_Reddit.csv')
 # 	return df
 
-def queryModel(df):
-	masterDict = {'anger':0, 'joy':0, 'disgust': 0, 'fear':0, 'surprise':0, 'sadness':0, 'neutral':0}
-	
-	numRows = df.shape[0]
+def queryModel(df, schoolType, time):
+	#numRows = df.shape[0]
 
 	for index, row in df.iterrows():
+		masterDict = {'anger':0, 'joy':0, 'disgust': 0, 'fear':0, 'surprise':0, 'sadness':0, 'neutral':0}
 		emotion_scores = classifier(row[2])[0]
-		print(emotion_scores)
 
 		for emotion in emotion_scores:
-			masterDict[emotion['label']] += float(emotion['score'])
+			masterDict[emotion['label']] = float(emotion['score'])
 	
-	for emotion in masterDict:
-		masterDict[emotion] /= numRows
+	# for emotion in masterDict:
+	# 	masterDict[emotion] /= numRows
+		dictToCsv(masterDict, schoolType, time)
 
-	return masterDict
 
+def dictToCsv(my_dict, schoolType, time):
+	with open('{}_{}.csv'.format(schoolType, time), 'a') as f:
+		writer = DictWriter(f, fieldnames = categories)
 
-def dictToCsv(my_dict, dataType, time):
-	with open('{}_{}.csv'.format(dataType, time), 'w') as f:
-		writer = csv.writer(f)
-		# for key, value in my_dict.items():
-		# 	writer.writerow([key, value])
-		keys = my_dict.keys()
-		vals = my_dict.values()
-		writer.writerow(keys)
-		writer.writerow(vals)
+		if f.tell() == 0:
+			writer.writeheader()
+
+		writer.writerow(my_dict)
 	
 
 # def query(payload):
@@ -154,12 +152,9 @@ def dictToCsv(my_dict, dataType, time):
 def run():
 	for schoolType in ['rural', 'urban', 'all']:
 		for timePeriod in ['pre', 'peak', 'school_opening']:
-			if schoolType == 'urban' and timePeriod == 'pre':
-				continue
 			df = loadData(schoolType)
 			splitDf = splitDataIntoTimePeriods(df, timePeriod)
-			scores = queryModel(splitDf)
-			dictToCsv(scores, schoolType, timePeriod)
+			scores = queryModel(splitDf, schoolType, timePeriod)
 			
 	# df = loadData('urban')
 	# splitDf = splitDataIntoTimePeriods(df, 'pre')
