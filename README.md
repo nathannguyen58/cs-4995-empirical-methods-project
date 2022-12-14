@@ -1,1 +1,1 @@
-# cs-4995-empirical-methods-project-scraping
+# cs-4995-empirical-methods-project
