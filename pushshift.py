@@ -17,9 +17,7 @@ def get_pushshift_data(after, before, sub):
     print(r.status_code)
     if r.status_code != 204:
         data = json.loads(r.text)
-
         return data['data']
-    
 
 
 def collect_subData(subm):
